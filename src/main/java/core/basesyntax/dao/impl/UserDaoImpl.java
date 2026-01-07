@@ -32,32 +32,23 @@ public class UserDaoImpl extends AbstractDao implements UserDao {
 
     @Override
     public User get(Long id) {
-        User us;
-        Session session = null;
-        try {
-            session = factory.openSession();
-            return session.get(User.class, id);
-        } catch (Exception e) {
-            throw new RuntimeException("Cant get user by this id: " + id);
-        } finally {
-            if (session != null) {
-                session.close();
+        try (Session session = factory.openSession()) {
+            User user = session.get(User.class, id);
+            if (user != null && user.getComments() != null) {
+                user.getComments().size();
             }
+            return user;
+        } catch (Exception e) {
+            throw new RuntimeException("Can't get user by id: " + id, e);
         }
     }
 
     @Override
     public List<User> getAll() {
-        Session session = null;
-        try {
-            session = factory.openSession();
-            return session.createQuery("select User ", User.class).getResultList();
+        try (Session session = factory.openSession()) {
+            return session.createQuery("from User", User.class).getResultList();
         } catch (Exception e) {
             throw new RuntimeException("Cant get all user", e);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
         }
     }
 
